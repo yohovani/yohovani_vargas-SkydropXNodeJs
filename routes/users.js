@@ -10,20 +10,38 @@ const pool = new Pool({
   port: 5432,
 })
 
+const client = new Client({
+  user: 'cliente',
+  host: 'localhost',
+  database: 'nodeskx',
+  password: 'DragonBall',
+  port: 5432,
+})
+client.connect()
+
 
 /* GET users listing. */
 router.get('/:id', function(req, res, next) {
-  console.log(req.params.id);
   pool.query('SELECT * FROM users u WHERE id IN ('+req.params.id+')', (err, resql) => {
     res.json({"data":[resql.rows]});
-    console.log(err, resql.rows)
-    pool.end()
   })
 });
 
 /* POST user Create */
 router.post('/add/', function(req, res, next){
-  res.json({"message":"ok"})
+  let text = "INSERT INTO public.users (email, first_name, last_name, company, url, description) VALUES($1, $2, $3, $4, $5, $6)"
+  let values = [req.body['email'],req.body['first_name'],req.body['last_name'],req.body['company'],req.body['url'],req.body['description']]
+
+  // callback
+  client.query(text, values, (err, resql) => {
+    if (err) {
+      res.json(err.stack)
+    } else {
+      if(resql.rowCount > 0){
+        res.json({"status":200,"message":"Usuario agregado correctamente"})
+      }
+    }
+  })
 });
 
 /* PUT user Modify */
