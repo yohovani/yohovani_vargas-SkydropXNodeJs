@@ -4,18 +4,18 @@ var router = express.Router();
 const { Pool, Client } = require('pg');
 const { user } = require('pg/lib/defaults');
 const pool = new Pool({
-  user: 'xxxxxxxx',
+  user: 'cliente',
   host: 'localhost',
   database: 'nodeskx',
-  password: 'xxxxxxxxx',
+  password: 'DragonBall',
   port: 5432,
 })
 
 const client = new Client({
-  user: 'xxxxxxx',
+  user: 'cliente',
   host: 'localhost',
   database: 'nodeskx',
-  password: 'xxxxxxxxxx',
+  password: 'DragonBall',
   port: 5432,
 })
 client.connect()
@@ -63,7 +63,18 @@ router.put('/modify/', function(req, res, next){
 
 /* DELETE User Delete */
 router.delete('/delete/:id', function(req, res, next){
-  res.json({"message":"ok"})
+  const query = {
+    text: "DELETE FROM public.users WHERE id=$1",
+    values: [req.params.id]
+  }
+  pool.query(query,(err,resql) => {
+    if(resql.rowCount > 0){
+      res.json({"Status":"Ok","rowCount":resql.rowCount})
+    }else{
+      res.json({"Status":"Error","rowCount":resql.rowCount})
+    }
+  })
+
 });
 
 
