@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const request = require('request');
 
 const { Pool } = require('pg');
 
@@ -7,7 +8,7 @@ const pool = new Pool({
   user: 'xxxxxxxx',
   host: 'localhost',
   database: 'nodeskx',
-  password: 'xxxxxxxxxxxx',
+  password: 'xxxxxxxxxx',
   port: 5432,
 })
 
@@ -15,14 +16,53 @@ const pool = new Pool({
 router.get('/:id', function(req, res, next) {
   try {
     const query = {
-      text: "SELECT * FROM users u WHERE id IN ($1)",
+      text: "SELECT * FROM users u WHERE id IN ('"+req.params.id+"')",
       values: [req.params.id]
     }
-    pool.query(query, (err, resql) => {
+    /*
+      Obtención de los Id de la petición para identificar los que no se encuentren
+    */
+
+      let ids = req.params.id.split(",").map(function(item) {
+        return parseInt(item, 10);
+      });
+
+    //Fin de la obtencion de ids
+    
+    pool.query("SELECT * FROM users u WHERE id IN ("+req.params.id+")", (err, resql) => {
       if(err){
         res.json({"Status":"Error","Message":err.message})
       }else{
-        res.json({"data":[resql.rows]});
+        //Verificación sobre si se encontraron todos los ids en la bd
+        if(ids.length == resql.rows)
+          res.json({"data":[resql.rows]});
+        else{
+          let data =  resql.rows
+          //Consulta Ids Faltantes
+          let ids_found = []
+          resql.rows.forEach(
+            function(element){
+              ids_found.push(element["id"])
+            }
+          )
+          let id_missing = []
+          //Filtrado
+          ids.forEach(function(e) { if(ids_found.indexOf(e) === -1){id_missing.push(e)}})
+          //Fin de la consulta de Ids Faltantes
+          id_missing.forEach(function(element) {
+            request.get("https://reqres.in/api/users/"+element,(err, resreq, body) => {
+              if(err){
+                data.push({"data":{"id":element+"not fount"}})
+              }else{
+                if(JSON.parse(body)["data"] != undefined)
+                  data.push(JSON.parse(body)["data"])
+                else{}
+                  data.push({"status":"404","id":element+" not found"})
+              }
+              res.json(data)
+            })
+          })
+        }
       }
     })
   }catch (error){

@@ -3,6 +3,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cors = require('cors')
+
 
 var usersRouter = require('./routes/users');
 
@@ -14,6 +16,8 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Headers", "Acept, Origin, Content-Type, Access-Control-Allow-Origin")
   next()
 })
+
+app.use(cors())
 
 // view engine setup
 app.set('view engine', 'jade');
