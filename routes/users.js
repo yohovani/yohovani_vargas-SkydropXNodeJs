@@ -1,79 +1,98 @@
 var express = require('express');
 var router = express.Router();
 
-const { Pool, Client } = require('pg');
-const { user } = require('pg/lib/defaults');
+const { Pool } = require('pg');
+
 const pool = new Pool({
-  user: 'cliente',
+  user: 'xxxxxxxx',
   host: 'localhost',
   database: 'nodeskx',
-  password: 'DragonBall',
+  password: 'xxxxxxxxxxxx',
   port: 5432,
 })
-
-const client = new Client({
-  user: 'cliente',
-  host: 'localhost',
-  database: 'nodeskx',
-  password: 'DragonBall',
-  port: 5432,
-})
-client.connect()
-
 
 /* GET users listing. */
 router.get('/:id', function(req, res, next) {
-  pool.query('SELECT * FROM users u WHERE id IN ('+req.params.id+')', (err, resql) => {
-    res.json({"data":[resql.rows]});
-  })
+  try {
+    const query = {
+      text: "SELECT * FROM users u WHERE id IN ($1)",
+      values: [req.params.id]
+    }
+    pool.query(query, (err, resql) => {
+      if(err){
+        res.json({"Status":"Error","Message":err.message})
+      }else{
+        res.json({"data":[resql.rows]});
+      }
+    })
+  }catch (error){
+    res.json({"Status":"Error","Error Code":500})
+  }
+
 });
 
 /* POST user Create */
 router.post('/add/', function(req, res, next){
-  let text = "INSERT INTO public.users (email, first_name, last_name, company, url, description) VALUES($1, $2, $3, $4, $5, $6)"
-  let values = [req.body['email'],req.body['first_name'],req.body['last_name'],req.body['company'],req.body['url'],req.body['description']]
-
-  // callback
-  client.query(text, values, (err, resql) => {
-    if (err) {
-      res.json(err.stack)
-    } else {
-      if(resql.rowCount > 0){
-        res.json({"status":200,"message":"Usuario agregado correctamente"})
-      }
+  try{
+    const query = {
+      text:"INSERT INTO public.users (email, first_name, last_name, company, url, description) VALUES($1, $2, $3, $4, $5, $6)",
+      values: [req.body['email'],req.body['first_name'],req.body['last_name'],req.body['company'],req.body['url'],req.body['description']]
     }
-  })
+
+    pool.query(query, (err, resql) => {
+      if (err)
+        res.json({"Status":"Error","Message":err.message})
+      else
+          if(resql.rowCount > 0)
+            res.json({"Status":"Ok","message":"Usuario agregado correctamente"})
+    })
+  }catch(error){
+    res.json({"Status":"Error","Error Code":500})
+  }
+  
 });
 
 /* PUT user Modify */
 router.put('/modify/', function(req, res, next){
-  const query = {
-    text: "UPDATE public.users SET email=$2, first_name=$3, last_name=$4, company=$5, url=$6, description=$7 WHERE id=$1",
-    values: [req.body["id"],req.body["email"],req.body["first_name"],req.body["last_name"],req.body["company"],req.body["url"],req.body["description"]]
+  try{
+    const query = {
+      text: "UPDATE public.users SET email=$2, first_name=$3, last_name=$4, company=$5, url=$6, description=$7 WHERE id=$1",
+      values: [req.body["id"],req.body["email"],req.body["first_name"],req.body["last_name"],req.body["company"],req.body["url"],req.body["description"]]
+    }
+  
+    pool.query(query, (err, reqsqlU) => {
+      if(err)
+        res.json({"Status":"Error","Message":err.message})
+      else
+        if(reqsqlU.rowCount > 0)
+          res.json({"Status":"Ok","rowCount":reqsqlU.rowCount,"data":req.body})
+        else
+          res.json({"Status":"Error","rowCount":reqsqlU.rowCount})
+    })
+  }catch(error){
+    res.json({"Status":"Error","Error Code":500})
   }
-
-  pool.query(query, (err, reqsqlU) => {
-    if(reqsqlU.rowCount > 0)
-      res.json({"Status":"Ok","rowCount":reqsqlU.rowCount,"data":req.body})
-    else
-      res.json({"Status":"Error","rowCount":reqsqlU.rowCount})
-  })
-
 });
 
 /* DELETE User Delete */
 router.delete('/delete/:id', function(req, res, next){
-  const query = {
-    text: "DELETE FROM public.users WHERE id=$1",
-    values: [req.params.id]
-  }
-  pool.query(query,(err,resql) => {
-    if(resql.rowCount > 0){
-      res.json({"Status":"Ok","rowCount":resql.rowCount})
-    }else{
-      res.json({"Status":"Error","rowCount":resql.rowCount})
+  try{
+    const query = {
+      text: "DELETE FROM public.users WHERE id=$1",
+      values: [req.params.id]
     }
-  })
+    pool.query(query,(err,resql) => {
+      if(err)
+        res.json({"Status":"Error","Message":err.message})
+      else
+        if(resql.rowCount > 0)
+          res.json({"Status":"Ok","rowCount":resql.rowCount})
+        else
+          res.json({"Status":"Error","rowCount":resql.rowCount})  
+    })
+  }catch(error){
+    res.json({"Status":"Error","Error Code":500})
+  }
 
 });
 
