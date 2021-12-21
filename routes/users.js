@@ -1,20 +1,21 @@
 var express = require('express');
 var router = express.Router();
 
-const { Pool, Client } = require('pg')
+const { Pool, Client } = require('pg');
+const { user } = require('pg/lib/defaults');
 const pool = new Pool({
-  user: 'cliente',
+  user: 'xxxxxxxx',
   host: 'localhost',
   database: 'nodeskx',
-  password: 'DragonBall',
+  password: 'xxxxxxxxx',
   port: 5432,
 })
 
 const client = new Client({
-  user: 'cliente',
+  user: 'xxxxxxx',
   host: 'localhost',
   database: 'nodeskx',
-  password: 'DragonBall',
+  password: 'xxxxxxxxxx',
   port: 5432,
 })
 client.connect()
@@ -45,8 +46,19 @@ router.post('/add/', function(req, res, next){
 });
 
 /* PUT user Modify */
-router.put('/modify/:id', function(req, res, next){
-  res.json({"message":"ok"})
+router.put('/modify/', function(req, res, next){
+  const query = {
+    text: "UPDATE public.users SET email=$2, first_name=$3, last_name=$4, company=$5, url=$6, description=$7 WHERE id=$1",
+    values: [req.body["id"],req.body["email"],req.body["first_name"],req.body["last_name"],req.body["company"],req.body["url"],req.body["description"]]
+  }
+
+  pool.query(query, (err, reqsqlU) => {
+    if(reqsqlU.rowCount > 0)
+      res.json({"Status":"Ok","rowCount":reqsqlU.rowCount,"data":req.body})
+    else
+      res.json({"Status":"Error","rowCount":reqsqlU.rowCount})
+  })
+
 });
 
 /* DELETE User Delete */
