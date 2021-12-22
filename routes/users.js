@@ -5,16 +5,17 @@ const request = require('request');
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  user: 'xxxxxxxx',
+  user: 'cliente',
   host: 'localhost',
   database: 'nodeskx',
-  password: 'xxxxxxxxxx',
+  password: 'DragonBall',
   port: 5432,
 })
 
 /* GET users listing. */
 router.get('/:id', function(req, res, next) {
   try {
+    res.setHeader("Content-type", "application/json")
     const query = {
       text: "SELECT * FROM users u WHERE id IN ('"+req.params.id+"')",
       values: [req.params.id]
@@ -26,15 +27,15 @@ router.get('/:id', function(req, res, next) {
       let ids = req.params.id.split(",").map(function(item) {
         return parseInt(item, 10);
       });
-
+      console.log(ids)
     //Fin de la obtencion de ids
     
     pool.query("SELECT * FROM users u WHERE id IN ("+req.params.id+")", (err, resql) => {
       if(err){
-        res.json({"Status":"Error","Message":err.message})
+        res.status(200).json({"Status":"Error","Message":err.message})
       }else{
         //Verificación sobre si se encontraron todos los ids en la bd
-        if(ids.length == resql.rows)
+        if(ids.length == resql.rowCount)
           res.json({"data":[resql.rows]});
         else{
           let data =  resql.rows
@@ -49,26 +50,31 @@ router.get('/:id', function(req, res, next) {
           //Filtrado
           ids.forEach(function(e) { if(ids_found.indexOf(e) === -1){id_missing.push(e)}})
           //Fin de la consulta de Ids Faltantes
-          id_missing.forEach(function(element) {
-            request.get("https://reqres.in/api/users/"+element,(err, resreq, body) => {
-              if(err){
-                data.push({"data":{"id":element+"not fount"}})
-              }else{
-                if(JSON.parse(body)["data"] != undefined)
-                  data.push(JSON.parse(body)["data"])
-                else{}
-                  data.push({"status":"404","id":element+" not found"})
-              }
-              res.json(data)
-            })
+          console.log(id_missing)
+          id_missing.forEach( async function(element,next) {
+            try{
+              await request.get("https://reqres.in/api/users/"+element,(err, resreq, next) => {
+                if(err){
+                  data.push({"data":{"id":element+"not fount"}})
+                }else{
+                  if(JSON.parse(resreq.body)["data"] != undefined)
+                    data.push(JSON.parse(resreq.body)["data"])
+                  else{}
+                    data.push({"status":"404","id":element+" not found"})
+                }
+              })
+            }catch(e){
+              next(e)
+            }
           })
         }
       }
     })
+    res.status(200).json(data)
   }catch (error){
-    res.json({"Status":"Error","Error Code":500})
+    res.status(500).json({"Status":"Error","Error Code":500})
   }
-
+  throw new ERR_HTTP_HEADERS_SENT('set')
 });
 
 /* POST user Create */

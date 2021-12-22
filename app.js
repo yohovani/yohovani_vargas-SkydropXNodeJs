@@ -17,7 +17,6 @@ app.use(function (req, res, next) {
   next()
 })
 
-app.use(cors())
 
 // view engine setup
 app.set('view engine', 'jade');
