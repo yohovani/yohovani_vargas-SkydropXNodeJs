@@ -34,11 +34,11 @@ NodeJS engineer challenge
 ![put2](https://user-images.githubusercontent.com/30984240/147193412-e36d521d-9180-4849-af5e-5a768de2c022.png)
 
 ## Delete
-## Error en la petición
+### Error en la petición
 ![Delete](https://github.com/yohovani/yohovani_vargas-SkydropXNodeJs/blob/development/screenshots/pruebas/delete%20error.png?raw=true)
-## Petición Correcta en DELETE
+### Petición Correcta en DELETE
 ![Delete_2](https://github.com/yohovani/yohovani_vargas-SkydropXNodeJs/blob/development/screenshots/pruebas/delete%20success.png?raw=true)
-## Validación en la Eliminación
+### Validación en la Eliminación
 ![Delete_3](https://user-images.githubusercontent.com/30984240/147193703-f62390b4-36ed-4189-ac74-58e9b18722fb.png)
 
 > Todas las imagenes de las pruebas se encuentran en https://github.com/yohovani/yohovani_vargas-SkydropXNodeJs/tree/development/screenshots/pruebas
