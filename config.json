@@ -1,7 +1,7 @@
 {
-    "user": "xxxxxx",
+    "user": "cliente",
     "host": "192.168.0.32",
-    "database": "xxxxx",
-    "password": "xxxxxxx",
+    "database": "nodeskx",
+    "password": "DragonBall",
     "port": 5432
 }

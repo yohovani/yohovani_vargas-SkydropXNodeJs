@@ -4,7 +4,6 @@ var nconf = require('nconf');
 const request = require('request');
 const { Pool } = require('pg');
 
-
 nconf.argv()
    .env()
    .file({ file: 'config.json' });
