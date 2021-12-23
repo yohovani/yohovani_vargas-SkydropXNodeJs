@@ -24,7 +24,7 @@ NodeJS engineer challenge
 ### Uso externo de la API
 ![Get2](https://github.com/yohovani/yohovani_vargas-SkydropXNodeJs/blob/development/screenshots/pruebas/get%20ext%20api%20found.png?raw=true)
 
-## PSOT
+## POST
 ![post](https://github.com/yohovani/yohovani_vargas-SkydropXNodeJs/blob/development/screenshots/pruebas/post%20succes.png?raw=true)
 
 ## PUT
@@ -36,7 +36,7 @@ NodeJS engineer challenge
 ## Delete
 ## Error en la petición
 ![Delete](https://github.com/yohovani/yohovani_vargas-SkydropXNodeJs/blob/development/screenshots/pruebas/delete%20error.png?raw=true)
-##Petición Correcta en DELETE
+## Petición Correcta en DELETE
 ![Delete_2](https://github.com/yohovani/yohovani_vargas-SkydropXNodeJs/blob/development/screenshots/pruebas/delete%20success.png?raw=true)
 ## Validación en la Eliminación
 ![Delete_3](https://user-images.githubusercontent.com/30984240/147193703-f62390b4-36ed-4189-ac74-58e9b18722fb.png)
