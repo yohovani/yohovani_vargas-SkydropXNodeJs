@@ -16,7 +16,6 @@ const pool = new Pool({
   port: nconf.get("port"),
 })
 
-
 getUsers = (ids) =>{
   return new Promise((resolve, reject)=>{
       pool.query('SELECT * FROM users u WHERE id IN ('+ids+')',  (error, results)=>{
