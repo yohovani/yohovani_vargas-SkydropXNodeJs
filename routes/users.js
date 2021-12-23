@@ -1,80 +1,90 @@
 var express = require('express');
 var router = express.Router();
+var nconf = require('nconf');
 const request = require('request');
-
 const { Pool } = require('pg');
 
+
+nconf.argv()
+   .env()
+   .file({ file: 'config.json' });
+
 const pool = new Pool({
-  user: 'cliente',
-  host: 'localhost',
-  database: 'nodeskx',
-  password: 'DragonBall',
-  port: 5432,
+  user: nconf.get("user"),
+  host: nconf.get("host"),
+  database: nconf.get("database"),
+  password: nconf.get("password"),
+  port: nconf.get("port"),
 })
 
-/* GET users listing. */
-router.get('/:id', function(req, res, next) {
-  try {
-    res.setHeader("Content-type", "application/json")
-    const query = {
-      text: "SELECT * FROM users u WHERE id IN ('"+req.params.id+"')",
-      values: [req.params.id]
-    }
-    /*
-      Obtención de los Id de la petición para identificar los que no se encuentren
-    */
 
-      let ids = req.params.id.split(",").map(function(item) {
-        return parseInt(item, 10);
+getUsers = (ids) =>{
+  return new Promise((resolve, reject)=>{
+      pool.query('SELECT * FROM users u WHERE id IN ('+ids+')',  (error, results)=>{
+          if(error){
+              return reject(error);
+          }
+          return resolve(results);
       });
-      console.log(ids)
-    //Fin de la obtencion de ids
-    
-    pool.query("SELECT * FROM users u WHERE id IN ("+req.params.id+")", (err, resql) => {
+  });
+};
+
+useExternealApi = (element) => {
+  return new Promise((resolve, reject)=>{
+    request.get("https://reqres.in/api/users/"+element, async (err, resreq, body) => {
       if(err){
-        res.status(200).json({"Status":"Error","Message":err.message})
+        return reject({"data":{"id":element}})
       }else{
-        //Verificación sobre si se encontraron todos los ids en la bd
-        if(ids.length == resql.rowCount)
-          res.json({"data":[resql.rows]});
-        else{
-          let data =  resql.rows
-          //Consulta Ids Faltantes
-          let ids_found = []
-          resql.rows.forEach(
-            function(element){
-              ids_found.push(element["id"])
-            }
-          )
-          let id_missing = []
-          //Filtrado
-          ids.forEach(function(e) { if(ids_found.indexOf(e) === -1){id_missing.push(e)}})
-          //Fin de la consulta de Ids Faltantes
-          console.log(id_missing)
-          id_missing.forEach( async function(element,next) {
-            try{
-              await request.get("https://reqres.in/api/users/"+element,(err, resreq, next) => {
-                if(err){
-                  data.push({"data":{"id":element+"not fount"}})
-                }else{
-                  if(JSON.parse(resreq.body)["data"] != undefined)
-                    data.push(JSON.parse(resreq.body)["data"])
-                  else{}
-                    data.push({"status":"404","id":element+" not found"})
-                }
-              })
-            }catch(e){
-              next(e)
-            }
-          })
+        if(JSON.parse(body)["data"] != undefined){
+          return resolve(JSON.parse(body)["data"])
+        }else{
+          return resolve({"status":"404","id":element+" not found"})
         }
       }
     })
-    res.status(200).json(data)
-  }catch (error){
-    res.status(500).json({"Status":"Error","Error Code":500})
+  });
+};
+
+
+/* GET users listing. */
+router.get('/:id', async function(req, res, next) {
+  try{
+    users = await getUsers(req.params.id);
+    let data = users.rows
+    //Obtención de los Id de la petición para identificar los que no se encuentren
+    let ids = req.params.id.split(",").map(function(item) {
+      return parseInt(item, 10);
+    });
+    //Fin de la obtencion de ids
+    if(ids.length != users.rowCount){
+      //Consulta Ids Faltantes
+      let ids_found = []
+      users.rows.forEach(
+        function(element){
+          ids_found.push(element["id"])
+        }
+      )
+      let id_missing = []
+      //Filtrado
+      ids.forEach(function(e) { if(ids_found.indexOf(e) === -1){id_missing.push(e)}})
+      //Fin de la consulta de Ids Faltantes
+      
+      for(i = 0;i < id_missing.length; i++){
+        aux = await useExternealApi(id_missing[i]);
+        data.push(aux)
+      }
+
+      res.status(200).json(data)
+    }else{
+      res.status(200).json(data)
+    }
+
+
+  }catch(e){
+    console.log(e)
   }
-  throw new ERR_HTTP_HEADERS_SENT('set')
+
+
 });
 
 /* POST user Create */
