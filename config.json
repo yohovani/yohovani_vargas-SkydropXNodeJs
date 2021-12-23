@@ -1,6 +1,6 @@
 {
     "user": "cliente",
-    "host": "192.168.0.32",
+    "host": "localhost",
     "database": "nodeskx",
     "password": "DragonBall",
     "port": 5432
